@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include "Gollum.h"
+#include "Encrypt.h"
 
 using namespace std;
 
@@ -42,6 +43,7 @@ int main(int argc, char* argv[])
 
     if (action == "list")
     {
+        Encrypt *encryptor = new Encrypt();
         ifstream fileStore("gollumstore");
         if ((fileStore.rdstate() & std::ifstream::failbit) != 0)
         {
@@ -73,13 +75,36 @@ int main(int argc, char* argv[])
             fileStore >> data;
         }
         
+        data = encryptor->DecryptString(data);
+
         cout << data << endl;
         fileStore.close();
     }
     else if (action == "add")
     {
+        if (argc != 6)
+        {
+            cout << usage << endl;
+            return 0;
+        }
+
+        Encrypt* encryptor = new Encrypt();
+        ifstream inFileStore("gollumstore");
+
+        if ((inFileStore.rdstate() & std::ifstream::failbit) != 0)
+        {
+            std::cerr << "Error opening file store" << endl;
+            return 0;
+        }
+
+        string encryptedData;
+        inFileStore >> encryptedData;
+        string decryptedData = encryptor->DecryptString(encryptedData);
+
+        inFileStore.close();
+
         fstream fileStore;
-        fileStore.open("gollumstore", ios_base::app);
+        fileStore.open("gollumstore", ios_base::out);
 
         if ((fileStore.rdstate() & std::ifstream::failbit) != 0)
         {
@@ -87,18 +112,13 @@ int main(int argc, char* argv[])
             return 0;
         }
 
-        if (argc != 6)
-        {
-            cout << usage << endl;
-            fileStore.close();
-            return 0;
-        }
-        
         string optionName = string(argv[3]);
         string optionPassword = string(argv[5]);
-        string data = optionName + "</n><p>" + optionPassword;
+        string newCredential = optionName + "</n><p>" + optionPassword;
         
-        fileStore << data;
+        encryptedData = encryptor->EncryptString(decryptedData + "\n" + newCredential);
+
+        fileStore << encryptedData << endl;
 
         cout << "Ah! it's been added... my PRECIOUS!" << endl;
 
