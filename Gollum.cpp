@@ -90,18 +90,23 @@ int main(int argc, char* argv[])
 
         Encrypt* encryptor = new Encrypt();
         ifstream inFileStore("gollumstore");
+        bool inFileFailure = false;
 
         if ((inFileStore.rdstate() & std::ifstream::failbit) != 0)
         {
-            std::cerr << "Error opening file store" << endl;
-            return 0;
+            cout << "Error opening file store. Attempting to recreate file store" << endl;
+            inFileFailure = true;
         }
+        
+        string encryptedData, decryptedData;
+        
+        if (!inFileFailure)
+        {
+            inFileStore >> encryptedData;
+            decryptedData = encryptor->DecryptString(encryptedData);
 
-        string encryptedData;
-        inFileStore >> encryptedData;
-        string decryptedData = encryptor->DecryptString(encryptedData);
-
-        inFileStore.close();
+            inFileStore.close();
+        }
 
         fstream fileStore;
         fileStore.open("gollumstore", ios_base::out);

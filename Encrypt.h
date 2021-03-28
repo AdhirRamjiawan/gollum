@@ -8,7 +8,7 @@
 #include <openssl/err.h>
 #include <openssl/bio.h>
 
-#define MAX_FILESTORE_SIZE_IN_CHARS 10000000
+#define MAX_FILESTORE_SIZE_IN_CHARS 100000
 
 using namespace std;
 

@@ -27,9 +27,10 @@ string Encrypt::DecryptString(string encryptedText)
 {
     unsigned char decryptedtext[MAX_FILESTORE_SIZE_IN_CHARS];
 
-    int decryptedtext_len, ciphertext_len;
+    int decryptedtext_len = 0;
+    int ciphertext_len = encryptedText.size();
 
-    BIO_dump_fp(stdout, encryptedText.c_str(), ciphertext_len);
+    //BIO_dump_fp(stdout, encryptedText.c_str(), ciphertext_len);
 
     decryptedtext_len = this->InternalDecrypt(
         (unsigned char*)encryptedText.c_str(),
@@ -37,9 +38,13 @@ string Encrypt::DecryptString(string encryptedText)
         ENCRYPTION_KEY,
         ENCRYPTION_IV, decryptedtext);
 
-    decryptedtext[decryptedtext_len] = '\0';
-
-    return string((char*)decryptedtext);
+    if (decryptedtext_len > 0)
+    {
+        decryptedtext[decryptedtext_len] = '\0';
+        return string((char*)decryptedtext);
+    }
+    
+    return string();
 }
 
 
@@ -89,30 +94,39 @@ int Encrypt::InternalDecrypt(unsigned char* ciphertext, int ciphertext_len, unsi
     EVP_CIPHER_CTX* ctx;
 
     int len, plaintext_len;
+    int errorCode = -1;
 
     if (!(ctx = EVP_CIPHER_CTX_new()))
     {
         cerr << "error getting cipher context" << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
+    errorCode = EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+
+    if (1 != errorCode)
     {
-        cerr << "error EVP_DecryptInit_ex" << endl;
+        cerr << "error EVP_DecryptInit_ex, error code " << errorCode << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
-    if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
+    errorCode = EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len);
+    if (1 != errorCode)
     {
-        cerr << "error EVP_DecryptUpdate" << endl;
+        cerr << "error EVP_DecryptUpdate, error code " << errorCode << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
     plaintext_len = len;
 
-    if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
+    errorCode = EVP_DecryptFinal_ex(ctx, plaintext + len, &len);
+    if (1 != errorCode)
     {
-        cerr << "error EVP_DecryptFinal_ex" << endl;
+        cerr << "error EVP_DecryptFinal_ex, error code " << errorCode << endl;
+        EVP_CIPHER_CTX_free(ctx);
         return -1;
     }
 
