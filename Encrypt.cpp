@@ -12,23 +12,29 @@ Encrypt::Encrypt()
 
 string Encrypt::EncryptString(string plainText)
 {
-    unsigned char ciphertext[MAX_FILESTORE_SIZE_IN_CHARS];
+    unsigned char ciphertext[MAX_FILESTORE_SIZE_IN_CHARS] = "";
+    int plaintext_len = strlen(plainText.c_str());
 
     auto ciphertext_len = this->InternalEncrypt(
         (unsigned char*)plainText.c_str(),
-        strlen(plainText.c_str()),
+        plaintext_len,
         ENCRYPTION_KEY,
         ENCRYPTION_IV, ciphertext);
 
-    return string((char*)ciphertext);
+    if (ciphertext_len > -1)
+    {
+        return string((char*)ciphertext);
+    }
+
+    return string();
 }
 
 string Encrypt::DecryptString(string encryptedText)
 {
-    unsigned char decryptedtext[MAX_FILESTORE_SIZE_IN_CHARS];
+    unsigned char decryptedtext[MAX_FILESTORE_SIZE_IN_CHARS] = "";
 
     int decryptedtext_len = 0;
-    int ciphertext_len = encryptedText.size();
+    int ciphertext_len = strlen(encryptedText.c_str());
 
     //BIO_dump_fp(stdout, encryptedText.c_str(), ciphertext_len);
 
@@ -78,7 +84,7 @@ int Encrypt::InternalEncrypt(unsigned char* plaintext, int plaintext_len, unsign
     if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
     {
         cerr << "error evp_encryptfinal" << endl;
-        return -1;
+        //return -1;
     }
 
     ciphertext_len += len;
@@ -126,8 +132,8 @@ int Encrypt::InternalDecrypt(unsigned char* ciphertext, int ciphertext_len, unsi
     if (1 != errorCode)
     {
         cerr << "error EVP_DecryptFinal_ex, error code " << errorCode << endl;
-        EVP_CIPHER_CTX_free(ctx);
-        return -1;
+        //EVP_CIPHER_CTX_free(ctx);
+       // return -1;
     }
 
     plaintext_len += len;

@@ -43,16 +43,19 @@ int main(int argc, char* argv[])
 
     if (action == "list")
     {
+        string output = "";
         Encrypt *encryptor = new Encrypt();
-        ifstream fileStore("gollumstore");
+        ifstream fileStore("gollumstore", ios_base::binary);
+
         if ((fileStore.rdstate() & std::ifstream::failbit) != 0)
         {
             std::cerr << "Error opening file store" << endl;
             return 0;
         }
 
-        string data;
         cout << "What's in your pocketses?!" << endl;
+        string data;
+        vector<string> credentials;
 
         if (argc == 3)
         {
@@ -60,7 +63,13 @@ int main(int argc, char* argv[])
 
             if (option1 == "--show-pass")
             {
-                fileStore >> data;
+                char ch;
+                while (fileStore.get(ch))
+                {
+                    data += ch;
+                }
+                output = encryptor->DecryptString(data);
+                cout << output << endl;
             }
             else
             {
@@ -72,12 +81,35 @@ int main(int argc, char* argv[])
         }
         else
         {
-            fileStore >> data;
+            string tmp = "";
+
+            char ch;
+            while (fileStore.get(ch))
+            {
+                data += ch;
+            }
+
+            data = encryptor->DecryptString(data);
+
+            int part = -1;
+            int lastIndex = -1;
+            string remainingData = data;
+
+            do
+            {
+                part = remainingData.find("</n>");
+                output = remainingData.substr(lastIndex + 1, part);
+                remainingData = remainingData.substr(part, data.size() - part);
+                lastIndex = part;
+                credentials.push_back(output);
+            } while (part);
+        }
+
+        for (auto cred : credentials)
+        {
+            cout << cred << endl;
         }
         
-        data = encryptor->DecryptString(data);
-
-        cout << data << endl;
         fileStore.close();
     }
     else if (action == "add")
@@ -89,7 +121,7 @@ int main(int argc, char* argv[])
         }
 
         Encrypt* encryptor = new Encrypt();
-        ifstream inFileStore("gollumstore");
+        ifstream inFileStore("gollumstore", ios_base::binary);
         bool inFileFailure = false;
 
         if ((inFileStore.rdstate() & std::ifstream::failbit) != 0)
@@ -102,7 +134,11 @@ int main(int argc, char* argv[])
         
         if (!inFileFailure)
         {
-            inFileStore >> encryptedData;
+            char ch;
+            while (inFileStore.get(ch))
+            {
+                encryptedData += ch;
+            }
             decryptedData = encryptor->DecryptString(encryptedData);
 
             inFileStore.close();
@@ -119,11 +155,11 @@ int main(int argc, char* argv[])
 
         string optionName = string(argv[3]);
         string optionPassword = string(argv[5]);
-        string newCredential = optionName + "</n><p>" + optionPassword;
+        string newCredential = optionName + "</n><p>" + optionPassword + "</cred>";
         
-        encryptedData = encryptor->EncryptString(decryptedData + "\n" + newCredential);
+        encryptedData = encryptor->EncryptString(decryptedData + newCredential);
 
-        fileStore << encryptedData << endl;
+        fileStore << encryptedData;
 
         cout << "Ah! it's been added... my PRECIOUS!" << endl;
 
