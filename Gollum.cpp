@@ -24,17 +24,6 @@ int main(int argc, char* argv[])
 
     auto action = string(argv[1]);
 
-#ifdef  GOLLUM_DEBUG
-    cout << "argument count : " << argc << endl;
-
-    for (int i = 0; i < argc; i++)
-    {
-        cout << "arg [" << i << "]: " << argv[i] << endl;
-    }
-
-    cout << "action : " << action << endl;
-#endif //  GOLLUM_DEBUG
-
     AbstractAction *actionType = new ListAction();
     vector<string> arguments(argv, argv + argc);
 
@@ -51,6 +40,11 @@ int main(int argc, char* argv[])
     else if (action == "remove")
     {
 
+    }
+    else
+    {
+        cout << GOLLUM_USAGE << endl;
+        return 0;
     }
 
     actionType->DoAction();
