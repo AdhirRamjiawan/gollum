@@ -7,4 +7,6 @@
 #include <string.h>
 #include <vector>
 
+#include "GollumStrings.h"
+
 // TODO: Reference additional headers your program requires here.
