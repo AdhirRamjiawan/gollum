@@ -6,8 +6,10 @@
 #include <iostream>
 
 #include "../GollumStrings.h"
-#include "../Encrypt.h"
+#include "../Encryption/Encrypt.h"
 #include "../AbstractAction.h"
+#include "../Models.h"
+#include "../GollumFileManager.h"
 
 using namespace std;
 

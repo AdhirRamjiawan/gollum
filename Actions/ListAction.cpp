@@ -15,19 +15,10 @@ ListAction::~ListAction()
 
 void ListAction::DoAction()
 {
-    string output = "";
-    Encrypt* encryptor = new Encrypt();
-    ifstream fileStore("gollumstore", ios_base::binary);
-
-    if ((fileStore.rdstate() & std::ifstream::failbit) != 0)
-    {
-        std::cerr << "Error opening file store" << endl;
-        return;
-    }
-
     cout << "What's in your pocketses?!" << endl;
-    string data;
-    vector<string> credentials;
+    
+    GollumFileManager* fileManager = new GollumFileManager();
+    vector<struct Credential> credentials = fileManager->ReadFromFileStore();
 
     if (this->Argc == 3)
     {
@@ -35,52 +26,19 @@ void ListAction::DoAction()
 
         if (option1 == "--show-pass")
         {
-            char ch;
-            while (fileStore.get(ch))
-            {
-                data += ch;
-            }
-            output = encryptor->DecryptString(data);
-            cout << output << endl;
+            for (auto cred : credentials)
+                cout << cred.Username << " " << cred.Password << endl;
         }
         else
         {
             cout << GOLLUM_USAGE << endl;
         }
 
-        fileStore.close();
         return;
     }
     else
     {
-        string tmp = "";
-
-        char ch;
-        while (fileStore.get(ch))
-        {
-            data += ch;
-        }
-
-        data = encryptor->DecryptString(data);
-
-        int part = -1;
-        int lastIndex = -1;
-        string remainingData = data;
-
-        do
-        {
-            part = remainingData.find("</n>");
-            output = remainingData.substr(lastIndex + 1, part);
-            remainingData = remainingData.substr(part, data.size() - part);
-            lastIndex = part;
-            credentials.push_back(output);
-        } while (part);
+        for (auto cred : credentials)
+            cout << cred.Username << endl;
     }
-
-    for (auto cred : credentials)
-    {
-        cout << cred << endl;
-    }
-
-    fileStore.close();
 }

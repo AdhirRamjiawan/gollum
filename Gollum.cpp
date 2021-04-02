@@ -5,7 +5,7 @@
 
 #include <fstream>
 #include "Gollum.h"
-#include "Encrypt.h"
+#include "Encryption/Encrypt.h"
 #include "AbstractAction.h"
 #include "Actions/ListAction.h"
 #include "Actions/AddAction.h"
@@ -30,12 +30,10 @@ int main(int argc, char* argv[])
     if (action == "list")
     {
         actionType = new ListAction();
-        actionType->Setup(argc, arguments);
     }
     else if (action == "add")
     {
         actionType = new AddAction();
-        actionType->Setup(argc, arguments);
     }
     else if (action == "remove")
     {
@@ -47,6 +45,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    actionType->Setup(argc, arguments);
     actionType->DoAction();
 
     

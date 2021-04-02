@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "../GollumStrings.h"
-#include "../Encrypt.h"
+#include "../Encryption/Encrypt.h"
 #include "../AbstractAction.h"
 
 using namespace std;
