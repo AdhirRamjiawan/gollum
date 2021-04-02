@@ -14,9 +14,8 @@ TODO:
 - Implement --show-pass option for list action
 - Implement --pattern option for list action
 - Implement remove action
-- Split out action logic into its own functions
 - Encrypt Gollum file store using a key and passphrase
-
+- Format output on console better
 
 Roadmap:
 =====
