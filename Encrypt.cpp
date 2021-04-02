@@ -1,144 +1,103 @@
 
 #include "Encrypt.h"
 
+#include <vector>
+
+
 Encrypt::Encrypt()
 {
-    /* A 256 bit key */ // CHANGE THESE TO BE ENV VARS OR SOMETHING ELSE
-    this->ENCRYPTION_KEY = (unsigned char*)"01234567890123456789012345678901";
-
-    /* A 128 bit IV */ // CHANGE THESE TO BE ENV VARS OR SOMETHING ELSE
-    this->ENCRYPTION_IV = (unsigned char*)"0123456789012345";
 }
 
 string Encrypt::EncryptString(string plainText)
 {
-    unsigned char ciphertext[MAX_FILESTORE_SIZE_IN_CHARS] = "";
-    int plaintext_len = strlen(plainText.c_str());
+    struct AES_ctx ctx;
+    uint8_t buffer[MAX_FILESTORE_SIZE_IN_CHARS] = { 0x0 };
+    int paddingLength = plainText.size() % 16;
 
-    auto ciphertext_len = this->InternalEncrypt(
-        (unsigned char*)plainText.c_str(),
-        plaintext_len,
-        ENCRYPTION_KEY,
-        ENCRYPTION_IV, ciphertext);
-
-    if (ciphertext_len > -1)
+    // Padding using PCKS method: http://www.crypto-it.net/eng/theory/padding.html
+    if (paddingLength != 0)
     {
-        return string((char*)ciphertext);
+        for (int i = 0; i < paddingLength; i++)
+        {
+            plainText += paddingLength;
+        }
     }
 
-    return string();
+    vector<uint8_t> myVector(plainText.begin(), plainText.end());
+
+    for (int i = 0; i < plainText.size(); i++)
+    {
+        uint8_t c = myVector[i];
+        buffer[i] = c;
+    }
+
+    AES_init_ctx_iv(&ctx, ENCRYPTION_KEY, ENCRYPTION_IV);
+
+    AES_CBC_encrypt_buffer(&ctx, buffer, MAX_FILESTORE_SIZE_IN_CHARS);
+
+    
+    // convert buffer to string
+    string encryptedText = "";
+    
+    for (auto ch : buffer)
+        encryptedText += ch;
+
+    return encryptedText;
 }
 
 string Encrypt::DecryptString(string encryptedText)
 {
-    unsigned char decryptedtext[MAX_FILESTORE_SIZE_IN_CHARS] = "";
+    struct AES_ctx dctx;
+    uint8_t dbuffer[MAX_FILESTORE_SIZE_IN_CHARS] = { 0x0 };
 
-    int decryptedtext_len = 0;
-    int ciphertext_len = strlen(encryptedText.c_str());
-
-    //BIO_dump_fp(stdout, encryptedText.c_str(), ciphertext_len);
-
-    decryptedtext_len = this->InternalDecrypt(
-        (unsigned char*)encryptedText.c_str(),
-        ciphertext_len,
-        ENCRYPTION_KEY,
-        ENCRYPTION_IV, decryptedtext);
-
-    if (decryptedtext_len > 0)
+    // copy encrypted data to decryption buffer
+    for (int i = 0; i < MAX_FILESTORE_SIZE_IN_CHARS; i++)
     {
-        decryptedtext[decryptedtext_len] = '\0';
-        return string((char*)decryptedtext);
+        if (encryptedText[i] == '\0')
+            break;
+
+        dbuffer[i] = encryptedText[i];
     }
-    
-    return string();
+
+    AES_init_ctx_iv(&dctx, ENCRYPTION_KEY, ENCRYPTION_IV);
+    AES_CBC_decrypt_buffer(&dctx, dbuffer, MAX_FILESTORE_SIZE_IN_CHARS);
+
+    // ############################################################ //
+    // ##########  REMOVING PADDING AFTER DECRYPTION    ########### //
+    // ############################################################ //
+
+    uint8_t paddingChar = 0x0;
+    int dataEndPos = -1;
+
+    for (int i = 1; i < MAX_FILESTORE_SIZE_IN_CHARS; i++)
+    {
+        if (dbuffer[i] == 0x0)
+        {
+            paddingChar = dbuffer[i - 1]; /* loop must start from 1 to prevent -1 indexing */
+            dataEndPos = i - 1;
+            break;
+        }
+    }
+
+    int paddingCount = 0;
+
+    for (int i = dataEndPos; i > 0; i--)
+    {
+        if (dbuffer[i] == paddingChar)
+            paddingCount++;
+    }
+
+    bool hasPadding = (paddingCount == (int)paddingChar);
+
+    string decryptedText = "";
+
+    if (hasPadding)
+    {
+        for (int i = 0; i < dataEndPos - paddingCount + 1; i++)
+            decryptedText += (char)dbuffer[i];
+    }
+
+
+    return decryptedText;
 }
 
-
-int Encrypt::InternalEncrypt(unsigned char* plaintext, int plaintext_len, unsigned char* key,
-    unsigned char* iv, unsigned char* ciphertext)
-{
-    EVP_CIPHER_CTX* ctx;
-    int len, ciphertext_len;
-
-
-    if (!(ctx = EVP_CIPHER_CTX_new()))
-    {
-        cerr << "error getting cipher context" << endl;
-        return -1;
-    }
-
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
-    {
-        cerr << "error evp_encryptinit" << endl;
-        return -1;
-    }
-
-    if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
-    {
-        cerr << "error evp_encryptupdate" << endl;
-        return -1;
-    }
-
-    ciphertext_len = len;
-
-    if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
-    {
-        cerr << "error evp_encryptfinal" << endl;
-        //return -1;
-    }
-
-    ciphertext_len += len;
-
-    EVP_CIPHER_CTX_free(ctx);
-
-    return ciphertext_len;
-}
-
-int Encrypt::InternalDecrypt(unsigned char* ciphertext, int ciphertext_len, unsigned char* key,
-    unsigned char* iv, unsigned char* plaintext)
-{
-    EVP_CIPHER_CTX* ctx;
-
-    int len, plaintext_len;
-    int errorCode = -1;
-
-    if (!(ctx = EVP_CIPHER_CTX_new()))
-    {
-        cerr << "error getting cipher context" << endl;
-        EVP_CIPHER_CTX_free(ctx);
-        return -1;
-    }
-
-    errorCode = EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
-
-    if (1 != errorCode)
-    {
-        cerr << "error EVP_DecryptInit_ex, error code " << errorCode << endl;
-        EVP_CIPHER_CTX_free(ctx);
-        return -1;
-    }
-
-    errorCode = EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len);
-    if (1 != errorCode)
-    {
-        cerr << "error EVP_DecryptUpdate, error code " << errorCode << endl;
-        EVP_CIPHER_CTX_free(ctx);
-        return -1;
-    }
-
-    plaintext_len = len;
-
-    errorCode = EVP_DecryptFinal_ex(ctx, plaintext + len, &len);
-    if (1 != errorCode)
-    {
-        cerr << "error EVP_DecryptFinal_ex, error code " << errorCode << endl;
-        //EVP_CIPHER_CTX_free(ctx);
-       // return -1;
-    }
-
-    plaintext_len += len;
-
-    EVP_CIPHER_CTX_free(ctx);
-
-    return plaintext_len;
-}

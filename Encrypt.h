@@ -3,26 +3,31 @@
 #include <string>
 #include <iostream>
 
-#include <openssl/conf.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
+#include "aes.hpp"
+#include <sstream>
 
-#define MAX_FILESTORE_SIZE_IN_CHARS 100000
+
+#define MAX_FILESTORE_SIZE_IN_CHARS 250 * 16 /* = 4000, i.e. MULTIPLE OF 16 */
 
 using namespace std;
 
 class Encrypt
 {
 public:
-	unsigned char* ENCRYPTION_KEY;
-	unsigned char* ENCRYPTION_IV;
 	Encrypt();
 	string EncryptString(string plainText);
 	string DecryptString(string encryptedText);
 private:
-	int InternalEncrypt(unsigned char* plaintext, int plaintext_len, unsigned char* key,
-		unsigned char* iv, unsigned char* ciphertext);
-	int InternalDecrypt(unsigned char* ciphertext, int ciphertext_len, unsigned char* key,
-		unsigned char* iv, unsigned char* plaintext);
+    uint8_t ENCRYPTION_KEY[16]={
+        0x01,0x02,0x03,0x04,
+        0x04,0x03,0x02,0x01,
+        0x01,0x02,0x03,0x04,
+        0x04,0x03,0x02,0x01
+    };
+    uint8_t ENCRYPTION_IV[16]= {
+        0x01,0x02,0x03,0x04,
+        0x04,0x03,0x02,0x01,
+        0x01,0x02,0x03,0x04,
+        0x07,0x07,0x07,0x07
+    };
 };

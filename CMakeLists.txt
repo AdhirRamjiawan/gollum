@@ -10,6 +10,9 @@ add_executable (Gollum "Gollum.cpp" "Gollum.h" "Encrypt.cpp" "Encrypt.h" "Abstra
 
 # TODO: Add tests and install targets if needed.
 
-target_link_libraries(Gollum LINK_PUBLIC "C:\\Program Files\\OpenSSL-Win64\\lib\\libcrypto.lib")
+#target_link_libraries(Gollum LINK_PUBLIC "C:\\Program Files\\OpenSSL-Win64\\lib\\libcrypto.lib")
 
-include_directories(Gollum "C:\\Program Files\\OpenSSL-Win64\\include")
+#include_directories(Gollum "C:\\Program Files\\OpenSSL-Win64\\include")
+
+target_link_libraries(Gollum LINK_PUBLIC "C:\\users\\adhir\\libs\\tiny-eas\\aes.a")
+include_directories(Gollum "C:\\users\\adhir\\libs\\tiny-eas")
