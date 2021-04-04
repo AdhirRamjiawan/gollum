@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "FileManager.h"
+
 using namespace std;
 
 class AbstractAction
@@ -15,4 +17,5 @@ public:
 protected:
 	int Argc;
 	vector<string> Argv;
+	FileManager* fileManager;
 };

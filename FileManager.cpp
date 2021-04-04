@@ -1,7 +1,7 @@
 
-#include "GollumFileManager.h"
+#include "FileManager.h"
 
-vector<struct Credential> GollumFileManager::ReadFromFileStore()
+vector<struct Credential> FileManager::ReadFromFileStore()
 {
     ifstream fileStore("gollumstore", ios_base::binary);
 
@@ -50,7 +50,27 @@ vector<struct Credential> GollumFileManager::ReadFromFileStore()
     return credentials;
 }
 
-void GollumFileManager::WriteToFileStore(vector<struct Credential> credentials)
+void FileManager::WriteToFileStore(vector<struct Credential> credentials)
 {
+    Encrypt* encryptor = new Encrypt();
+    
+    fstream fileStore;
+    fileStore.open("gollumstore", ios_base::out);
 
+    if ((fileStore.rdstate() & std::ifstream::failbit) != 0)
+    {
+        std::cerr << "Error opening file store" << endl;
+        return;
+    }
+
+    string credentialsString = "";
+
+    for (auto cred : credentials)
+        credentialsString += cred.Serialize();
+
+    string encryptedData = encryptor->EncryptString(credentialsString);
+
+    fileStore << encryptedData;
+
+    fileStore.close();
 }

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-class GollumFileManager
+class FileManager
 {
 public:
 	vector<struct Credential> ReadFromFileStore();

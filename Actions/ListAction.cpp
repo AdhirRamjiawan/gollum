@@ -16,8 +16,6 @@ ListAction::~ListAction()
 void ListAction::DoAction()
 {
     cout << "What's in your pocketses?!" << endl;
-    
-    GollumFileManager* fileManager = new GollumFileManager();
     vector<struct Credential> credentials = fileManager->ReadFromFileStore();
 
     if (this->Argc == 3)

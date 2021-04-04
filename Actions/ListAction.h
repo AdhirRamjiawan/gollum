@@ -9,7 +9,7 @@
 #include "../Encryption/Encrypt.h"
 #include "../AbstractAction.h"
 #include "../Models.h"
-#include "../GollumFileManager.h"
+#include "../FileManager.h"
 
 using namespace std;
 
