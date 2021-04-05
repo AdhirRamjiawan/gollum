@@ -6,7 +6,7 @@ cmake_minimum_required (VERSION 3.8)
 project ("Gollum")
 
 # Add source to this project's executable.
-add_executable (Gollum "Gollum.cpp" "Gollum.h" "Encryption/Encrypt.cpp" "Encryption/Encrypt.h" "AbstractAction.h" "AbstractAction.cpp" "Actions/AddAction.cpp" "Actions/AddAction.h" "GollumStrings.h" "Actions/ListAction.h" "Actions/ListAction.cpp" "Models.h" "FileManager.cpp" "FileManager.h")
+add_executable (Gollum "Gollum.cpp" "Gollum.h" "Encryption/Encrypt.cpp" "Encryption/Encrypt.h" "AbstractAction.h" "AbstractAction.cpp" "Actions/AddAction.cpp" "Actions/AddAction.h" "GollumStrings.h" "Actions/ListAction.h" "Actions/ListAction.cpp" "Models.h" "FileManager.cpp" "FileManager.h" "Actions/RemoveAction.cpp")
 
 # TODO: Add tests and install targets if needed.
 

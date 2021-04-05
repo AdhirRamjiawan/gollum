@@ -18,6 +18,15 @@ TODO:
 	  and smart pointers etc
 	- Add Tiny-AES-C library to source control and reference
 	  from there.
+	- Update username from model to be sitename. Not storing 
+	  usernames.
+	- Fix bug when certain symbols are used in password that
+	  wipes out file store.
+	- Add high level exception handling to roll back changes
+	  made to file store.
+	- Clean up how we parse action options from being positional
+	  to being able to access options by key-value pairs.
+	- Run static analysis tools against code base
 
 Roadmap:
 =====

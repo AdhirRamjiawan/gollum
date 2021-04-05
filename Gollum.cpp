@@ -9,6 +9,7 @@
 #include "AbstractAction.h"
 #include "Actions/ListAction.h"
 #include "Actions/AddAction.h"
+#include "Actions/RemoveAction.h"
 
 using namespace std;
 
@@ -37,7 +38,7 @@ int main(int argc, char* argv[])
     }
     else if (action == "remove")
     {
-
+        actionType = new RemoveAction();
     }
     else
     {
