@@ -10,6 +10,7 @@ Features:
 
 TODO:
 =====
+	- Add passkeys instead of key/passphrase
 	- Implement --pattern option for list action
 	- Implement remove action
 	- Encrypt Gollum file store using a key and passphrase
